@@ -1,6 +1,7 @@
 package org.example.recapproject_todos.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.example.recapproject_todos.exception.IdNotFoundException;
 import org.example.recapproject_todos.model.ToDo;
 import org.example.recapproject_todos.model.ToDoDTO;
 import org.example.recapproject_todos.service.ToDoService;
@@ -24,7 +25,7 @@ public class ToDoController {
     }
 
     @GetMapping("/todo/{id}")
-    public ToDo getToDoById(@PathVariable String id) {
+    public ToDo getToDoById(@PathVariable String id) throws IdNotFoundException {
         return toDoService.getToDoById(id);
     }
 
@@ -34,12 +35,12 @@ public class ToDoController {
     }
 
     @PutMapping("/todo/{id}")
-    public ToDo updateToDo(@RequestBody ToDo updatedTodo) {
+    public ToDo updateToDo(@RequestBody ToDo updatedTodo) throws IdNotFoundException {
         return toDoService.updateTodo(updatedTodo);
     }
 
     @DeleteMapping("/{id}")
-    public ToDo deleteTodo(@PathVariable String id){
+    public ToDo deleteTodo(@PathVariable String id) throws IdNotFoundException {
         return toDoService.deleteTodo(id);
     }
 }
