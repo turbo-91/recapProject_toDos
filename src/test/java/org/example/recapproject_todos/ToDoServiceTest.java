@@ -1,5 +1,6 @@
 package org.example.recapproject_todos;
 
+import org.example.recapproject_todos.exception.IdNotFoundException;
 import org.example.recapproject_todos.model.ToDo;
 import org.example.recapproject_todos.model.ToDoDTO;
 import org.example.recapproject_todos.repo.ToDoRepo;
@@ -61,7 +62,7 @@ class ToDoServiceTest {
     }
 
     @Test
-    void getToDoById_ShouldReturnToDo_whenCalledWithValidId() {
+    void getToDoById_ShouldReturnToDo_whenCalledWithValidId () throws IdNotFoundException {
         //GIVEN
         ToDo toDo1 = new ToDo("1", "Finish bootcamp", ToDo.toDoStatus.OPEN);
         ToDoService toDoService = new ToDoService(toDoRepo, idService);
@@ -76,6 +77,18 @@ class ToDoServiceTest {
         //THEN
         assertEquals(expected, actual); // Verify the fetched ToDo matches the expected
         verify(toDoRepo).findById("1"); // Verify findById was called once
+    }
+
+    @Test
+    void getToDoById_ShouldThrowIdNotFoundException_whenCalledWithInvalidId() {
+        // GIVEN
+        ToDoService toDoService = new ToDoService(toDoRepo, idService);
+
+        when(toDoRepo.findById("999")).thenReturn(Optional.empty()); // Mock repository returning optional
+
+        // WHEN & THEN
+        assertThrows(IdNotFoundException.class, () -> toDoService.getToDoById("999"));
+        verify(toDoRepo).findById("999"); // Verify findById was called once
     }
 
     // createToDo test
@@ -102,7 +115,7 @@ class ToDoServiceTest {
     // updateToDo Tests
 
     @Test
-    void updateToDo_shouldReturnUpdatedToDo_whenCalledWithValidData() {
+    void updateToDo_shouldReturnUpdatedToDo_whenCalledWithValidData() throws IdNotFoundException {
         //GIVEN
         ToDoService toDoService = new ToDoService(toDoRepo, idService);
 
@@ -123,10 +136,24 @@ class ToDoServiceTest {
         verify(toDoRepo).save(updatedToDo); // Verify save was called with the updated ToDo
     }
 
+    @Test
+    void updateTodo_ShouldThrowIdNotFoundException_whenToDoDoesNotExist() {
+        // GIVEN
+        ToDo updatedToDo = new ToDo("999", "Nonexistent ToDo", ToDo.toDoStatus.IN_PROGRESS);
+        ToDoService toDoService = new ToDoService(toDoRepo, idService);
+
+        when(toDoRepo.existsById("999")).thenReturn(false); // Mock repo indicates the ToDo doesn't exist
+
+        // WHEN & THEN
+        assertThrows(IdNotFoundException.class, () -> toDoService.updateTodo(updatedToDo));
+        verify(toDoRepo).existsById("999"); // Verify existence check was called
+        verify(toDoRepo, never()).save(any()); // Ensure save was never called
+    }
+
     // deleteToDo tests
 
     @Test
-    void deleteToDo_shouldReturnDeletedToDo_whenCalledWithValidId() {
+    void deleteToDo_shouldReturnDeletedToDo_whenCalledWithValidId() throws IdNotFoundException {
         //GIVEN
         ToDoService toDoService = new ToDoService(toDoRepo, idService);
 
@@ -147,6 +174,18 @@ class ToDoServiceTest {
         verify(toDoRepo).deleteById("1"); // Verify deleteById was called
     }
 
+    @Test
+    void deleteTodo_ShouldThrowIdNotFoundException_whenToDoDoesNotExist() {
+        // GIVEN
+        String invalidId = "999";
+        ToDoService toDoService = new ToDoService(toDoRepo, idService);
 
+        when(toDoRepo.existsById(invalidId)).thenReturn(false); // Mock repo indicates the ToDo doesn't exist
+
+        // WHEN & THEN
+        assertThrows(IdNotFoundException.class, () -> toDoService.deleteTodo(invalidId));
+        verify(toDoRepo).existsById(invalidId); // Verify existence check was called
+        verify(toDoRepo, never()).deleteById(any()); // Ensure deleteById was never called
+    }
 
 }
