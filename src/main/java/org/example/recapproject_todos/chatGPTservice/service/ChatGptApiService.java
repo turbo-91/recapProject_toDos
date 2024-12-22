@@ -16,13 +16,13 @@ import java.util.List;
 @Service
 public class ChatGptApiService {
 
-    private RestClient restClient;
+    private final RestClient restClient;
 
-    @Value("${app.chatgpt.api.key}")
+    @Value("${app.openai-api-key}")
     private String apiKey;
 
     public ChatGptApiService(RestClient.Builder builder) {
-        restClient = builder.build();
+        this.restClient = builder.build();
     }
 
     public String checkToDoForSpelling(ToDo toDo) {
